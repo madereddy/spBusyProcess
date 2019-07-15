@@ -14,7 +14,8 @@ GO
 *******************************
 ** PR   Date        Author  	Description 
 ** --   --------   -------  	------------------------------------
-** 1    20190710    madeeddy	Created
+** 1    20190710   madereddy	Created
+** 2	20190715   madereddy	Added Server and Instance Name to email subject and corrected query results
 *******************************
 ** Example Code
 ** Tested against StackOverflow Database: This code kill any query running longer than the @KillTime and email the dba team. EXEC spBusyProcess @KillTime = 1, @EmailAddress = 'admin@madereddy.com', @MailProfile = 'Default'
@@ -102,9 +103,10 @@ BEGIN
 							AND EventTime >= @KillTime
 							)
 	BEGIN
-		Declare @Body varchar(max), @TableHead varchar(1000), @TableTail varchar(1000)
+		Declare @Body varchar(max), @TableHead varchar(1000), @TableTail varchar(1000), @Subject varchar(100)
 		Set NoCount On;
 
+		SET @Subject = 'Blocking Session Detected: ' + @@servername
 
 		Set @TableTail = '</table></body></html>';
 		Set @TableHead = '<html><head>' +
@@ -136,7 +138,7 @@ BEGIN
 								td= I.EventTime,''
 								FROM  @BusyProcess I
 								WHERE   EventInfo NOT LIKE 'EXEC spBusyProcess%'
-								--AND EventTime >= 3
+								AND EventTime >= @KillTime
 								GROUP BY SPID, EventInfo, DBName, Command, LastBatch, EventTime
 								--HAVING MAX(Login) = 'CureMD'
 								For XML raw('tr'), Elements
@@ -152,7 +154,7 @@ BEGIN
 		Select @Body = @TableHead + @Body + @TableTail
 		-- Send mail to DBA Team
 		EXEC msdb.dbo.sp_send_dbmail @recipients=@EmailAddress,
-			@subject = 'Blocking Session Detected', 
+			@subject = @Subject, 
 			@profile_name = @MailProfile,
 			@body = @Body,
 			@body_format = 'HTML' ;
