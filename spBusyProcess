@@ -124,7 +124,7 @@ BEGIN
 						  '<td align=center bgcolor=#E6E6FA><b>CPUTime</b></td>'+
 						  '<td align=center bgcolor=#E6E6FA><b>DiskIO</b></td>'+
 						  '<td align=center bgcolor=#E6E6FA><b>LastBatch</b></td>'+
-						  '<td align=center bgcolor=#E6E6FA><b>EventTime</b></td></tr>';
+						  '<td align=center bgcolor=#E6E6FA><b>Duration (Minutes)</b></td></tr>';
 
 		Select @Body = (SELECT td= row_number()over(order by I.SPID ),'',		
 								td=I.SPID,'',
