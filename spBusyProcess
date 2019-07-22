@@ -14,8 +14,9 @@ GO
 *******************************
 ** PR   Date        Author  	Description 
 ** --   --------   -------  	------------------------------------
-** 1    20190710   madereddy	Created
-** 2	20190715   madereddy	Added Server and Instance Name to email subject and corrected query results
+** 1    20190710    madereddy	Created
+** 2	20190715	madereddy	Added Server and Instance Name to email subject and corrected query results
+** 3	20190722	madereddy	Corrected it for case sensitive collation servers
 *******************************
 ** Example Code
 ** Tested against StackOverflow Database: This code kill any query running longer than the @KillTime and email the dba team. EXEC spBusyProcess @KillTime = 1, @EmailAddress = 'admin@madereddy.com', @MailProfile = 'Default'
@@ -63,7 +64,7 @@ BEGIN
 				--Transactions that are open ,not committed ,or rolled back
 							WHEN Status = 'SLEEPING' AND open_tran  > 0 THEN 1 
 							ELSE 0 END
-				AND cmd NOT LIKE 'BACKUP%' --and dbid not in (1,2,3,4)		
+				AND cmd NOT LIKE 'BACKUP%' and dbid not in (1,2,3,4) and dbid not in (db_id('DbaData'))
             
 	-- Cursor to add actual procedure or batch statement for each process
 	DECLARE cur_BusyProcess Cursor
@@ -82,11 +83,11 @@ BEGIN
 						) 
 
 			UPDATE  @BusyProcess
-			SET     EventInfo = I.EventInfo,
+			SET     EventInfo = i.EventInfo,
 					EventTime = DATEDIFF(MI,LastBatch,GETDATE())
 			FROM    @BusyProcess b
 					CROSS JOIN @Inputbuffer i
-			WHERE   B.SPID = @SPID
+			WHERE   b.SPID = @SPID
 
 
 			DELETE  FROM @Inputbuffer
@@ -132,7 +133,7 @@ BEGIN
 								td= MAX(I.Login),'',
 								td= I.DBName,'',
 								td= I.Command,'',
-								td= SUM(I.CpuTime),'',
+								td= SUM(I.CPUTime),'',
 								td= SUM(I.DiskIO),'',
 								td= I.LastBatch,'',		
 								td= I.EventTime,''
@@ -168,7 +169,7 @@ BEGIN
 								for XML path('')
 								)
 		
-		EXEC(@QKILLsp) 
+		--EXEC(@QKILLsp) 
 
 	END
 END
