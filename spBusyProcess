@@ -58,11 +58,11 @@ BEGIN
 			  DiskIO, LastBatch, ProgramName )
     
 			SELECT spid,status,loginame,hostname,DB_NAME(dbid),cmd,cpu,physical_io,last_batch,program_name 
-			FROM SYS.SYSPROCESSES
+			FROM sys.sysprocesses
 			WHERE 
-				1 = CASE WHEN Status IN ( 'RUNNABLE', 'SUSPENDED' ) THEN 1
+				1 = CASE WHEN status IN ( 'RUNNABLE', 'SUSPENDED' ) THEN 1
 				--Transactions that are open ,not committed ,or rolled back
-							WHEN Status = 'SLEEPING' AND open_tran  > 0 THEN 1 
+							WHEN status = 'SLEEPING' AND open_tran  > 0 THEN 1 
 							ELSE 0 END
 				AND cmd NOT LIKE 'BACKUP%' and dbid not in (1,2,3,4) and dbid not in (db_id('DbaData'))
             
